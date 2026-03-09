@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
        Navbar Background on Scroll
     =============================================*/
     const navbar = document.getElementById('navbar');
-    
+
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
        Active Link Updating on Scroll
     =============================================*/
     const sections = document.querySelectorAll('section');
-    
+
     window.addEventListener('scroll', () => {
         let current = '';
         const scrollY = window.pageYOffset;
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sections.forEach(section => {
             const sectionTop = section.offsetTop - 150;
             const sectionHeight = section.clientHeight;
-            
+
             if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
                 current = section.getAttribute('id');
             }
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rootMargin: "0px 0px -50px 0px"
     };
 
-    const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+    const revealOnScroll = new IntersectionObserver(function (entries, observer) {
         entries.forEach(entry => {
             if (!entry.isIntersecting) {
                 return;
@@ -85,28 +85,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /*=============================================
-       Form Submission Mock
+       Form Submission via Formsubmit.co
     =============================================*/
     const contactForm = document.getElementById('contact-form');
-    
+
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // In a real app, send data to an endpoint
+
             const btn = contactForm.querySelector('button');
             const originalText = btn.innerHTML;
-            
-            btn.innerHTML = 'Message Envoyé <i class="fa-solid fa-check"></i>';
-            btn.style.background = '#00f0ff';
-            btn.style.color = '#050a15';
-            
-            contactForm.reset();
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = '';
-                btn.style.color = '';
-            }, 3000);
+
+            // Show loading state
+            btn.innerHTML = 'Envoi en cours... <i class="fa-solid fa-circle-notch fa-spin"></i>';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            // Form data
+            const formData = new FormData(contactForm);
+
+            // Fetch to formsubmit
+            fetch(contactForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        btn.innerHTML = 'Message Envoyé <i class="fa-solid fa-check"></i>';
+                        btn.style.background = '#00f0ff';
+                        btn.style.color = '#050a15';
+                        btn.style.opacity = '1';
+
+                        contactForm.reset();
+
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                            btn.disabled = false;
+                        }, 4000);
+                    } else {
+                        throw new Error('Erreur de requête');
+                    }
+                })
+                .catch(error => {
+                    btn.innerHTML = 'Erreur <i class="fa-solid fa-triangle-exclamation"></i>';
+                    btn.style.background = '#ff3a3a';
+                    btn.style.color = '#fff';
+                    btn.style.opacity = '1';
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                        btn.style.color = '';
+                        btn.disabled = false;
+                    }, 4000);
+                    console.error('Submission Form Error:', error);
+                });
         });
     }
 });
